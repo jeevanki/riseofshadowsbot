@@ -1,404 +1,983 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rise of Shadows - Mafia Story Game</title>
+    <title>Rise of Shadows - Interactive Mafia Game</title>
     <style>
-        :root {
-            --color-background: #1a1a1a;
-            --color-surface: #2d2d2d;
-            --color-text: #f5f5f5;
-            --color-text-secondary: rgba(245, 245, 245, 0.7);
-            --color-primary: #c01530;
-            --color-primary-hover: #a01226;
-            --color-gold: #d4af37;
-            --color-shadow: rgba(192, 21, 47, 0.2);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body {
             font-family: 'Georgia', serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
-            color: var(--color-text);
+            background: linear-gradient(135deg, #1a0000, #2d0a0a, #1a0000, #0a0a0a);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: #fff;
+            overflow-x: hidden;
             min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* Rain Effect */
+        .rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .rain-drop {
+            position: absolute;
+            width: 2px;
+            height: 15px;
+            background: linear-gradient(180deg, transparent, #ff0000);
+            animation: fall linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        /* Smoke Effect */
+        .smoke {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .smoke-cloud {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(80, 20, 20, 0.3), transparent);
+            border-radius: 50%;
+            animation: float 20s ease-in-out infinite;
+            opacity: 0.2;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, -100px) scale(1.2); }
         }
 
         .container {
-            max-width: 900px;
+            position: relative;
+            z-index: 10;
+            max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
         }
 
         header {
             text-align: center;
             padding: 40px 20px;
-            border-bottom: 2px solid var(--color-primary);
-            margin-bottom: 30px;
-            background: linear-gradient(180deg, rgba(192, 21, 47, 0.1) 0%, transparent 100%);
         }
 
         h1 {
-            font-size: 3rem;
-            color: var(--color-gold);
-            text-shadow: 2px 2px 8px var(--color-shadow);
+            font-size: 3.5em;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000;
+            animation: neonPulse 2s ease-in-out infinite;
+            letter-spacing: 3px;
             margin-bottom: 10px;
-            letter-spacing: 2px;
+        }
+
+        @keyframes neonPulse {
+            0%, 100% { text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 60px #ff0000; }
+            50% { text-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000, 0 0 90px #ff0000; }
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            color: var(--color-text-secondary);
-            font-style: italic;
+            font-size: 1.2em;
+            color: #ffaaaa;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
         }
 
         .game-screen {
-            background: var(--color-surface);
-            border-radius: 12px;
+            background: rgba(20, 0, 0, 0.8);
+            border: 2px solid #660000;
+            border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            margin: 20px 0;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .chapter-title {
+            text-align: center;
+            font-size: 2em;
+            color: #ff6666;
             margin-bottom: 20px;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; text-shadow: 0 0 25px rgba(255, 0, 0, 1); }
         }
 
         .story-text {
-            font-size: 1.1rem;
-            margin-bottom: 25px;
-            text-align: justify;
+            font-size: 1.1em;
             line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: justify;
+            animation: textShimmer 4s ease-in-out infinite;
         }
 
-        .character-name {
-            color: var(--color-gold);
+        @keyframes textShimmer {
+            0%, 100% { opacity: 0.95; }
+            50% { opacity: 1; text-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .stat {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #440000;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #ffaaaa;
+            margin-bottom: 5px;
+        }
+
+        .stat-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            transition: width 0.5s ease, background-color 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .stat-fill.loyalty { background: linear-gradient(90deg, #ffd700, #ffed4e); }
+        .stat-fill.power { background: linear-gradient(90deg, #ff0000, #ff6666); }
+        .stat-fill.trust { background: linear-gradient(90deg, #0066ff, #66b3ff); }
+        .stat-fill.love { background: linear-gradient(90deg, #ff1493, #ff69b4); }
+
+        .stat-value {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
             font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 3px #000;
         }
 
         .choices {
             display: flex;
             flex-direction: column;
             gap: 15px;
+            margin-top: 30px;
         }
 
         .choice-btn {
-            background: linear-gradient(135deg, var(--color-primary) 0%, #8b0000 100%);
-            color: var(--color-text);
-            border: 2px solid var(--color-gold);
-            padding: 18px 24px;
-            font-size: 1rem;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #660000, #330000);
+            border: 2px solid #ff0000;
+            color: #fff;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: left;
-            font-family: 'Georgia', serif;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+            animation: buttonAppear 0.5s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
-        .choice-btn:before {
-            content: '▸';
-            position: absolute;
-            left: -25px;
-            transition: left 0.3s ease;
-            font-size: 1.2rem;
+        .choice-btn:nth-child(1) { animation-delay: 0.1s; }
+        .choice-btn:nth-child(2) { animation-delay: 0.2s; }
+        .choice-btn:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes buttonAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .choice-btn:hover {
-            background: linear-gradient(135deg, var(--color-primary-hover) 0%, #660000 100%);
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px var(--color-shadow);
+            background: linear-gradient(135deg, #990000, #660000);
+            border-color: #ff3333;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+            transform: translateX(10px);
         }
 
-        .choice-btn:hover:before {
-            left: 10px;
+        .choice-btn:active {
+            animation: flash 0.3s ease;
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+        @keyframes flash {
+            0%, 100% { background: linear-gradient(135deg, #660000, #330000); }
+            50% { background: #ffffff; color: #000; }
         }
 
-        .stat-item {
-            background: rgba(192, 21, 47, 0.15);
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
+        /* Screen Shake */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px) rotate(-1deg); }
+            75% { transform: translateX(10px) rotate(1deg); }
         }
 
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--color-text-secondary);
-            margin-bottom: 5px;
+        .shake {
+            animation: shake 0.5s ease;
         }
 
-        .stat-value {
-            font-size: 1.3rem;
-            color: var(--color-gold);
-            font-weight: bold;
+        /* Particle Effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
         }
 
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: particleBurst 1s ease-out forwards;
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        @keyframes particleBurst {
+            to {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Blood Vignette */
+        .blood-vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 30%, rgba(139, 0, 0, 0.7));
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .blood-vignette.active {
+            opacity: 1;
+        }
+
+        /* Heartbeat */
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .heartbeat {
+            animation: heartbeat 0.6s ease;
+        }
+
+        /* Game Over */
         .game-over {
-            text-align: center;
-            padding: 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
         }
 
-        .game-over h2 {
-            font-size: 2.5rem;
-            color: var(--color-primary);
+        .game-over-mask {
+            font-size: 8em;
+            opacity: 0.1;
+            position: absolute;
+            animation: maskFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes maskFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .game-over-text {
+            font-size: 4em;
+            color: #ff0000;
+            text-shadow: 0 0 30px #ff0000;
             margin-bottom: 20px;
+            z-index: 1;
+        }
+
+        .game-over-reason {
+            font-size: 1.5em;
+            color: #ffaaaa;
+            margin-bottom: 30px;
+            z-index: 1;
         }
 
         .restart-btn {
-            background: var(--color-gold);
-            color: #1a1a1a;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.1rem;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #ff0000, #990000);
+            border: 3px solid #ff3333;
+            color: #fff;
+            padding: 20px 40px;
+            font-size: 1.3em;
+            border-radius: 15px;
             cursor: pointer;
-            font-weight: bold;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
+            z-index: 1;
             transition: all 0.3s ease;
         }
 
         .restart-btn:hover {
-            background: #c4a033;
-            transform: scale(1.05);
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(255, 0, 0, 0.9);
         }
 
-        .chapter-title {
-            font-size: 1.5rem;
-            color: var(--color-primary);
-            margin-bottom: 15px;
-            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-            padding-bottom: 10px;
+        .hidden {
+            display: none;
         }
 
         @media (max-width: 768px) {
-            h1 { font-size: 2rem; }
-            .game-screen { padding: 20px; }
-            .story-text { font-size: 1rem; }
+            h1 {
+                font-size: 2.5em;
+            }
+            .chapter-title {
+                font-size: 1.5em;
+            }
+            .story-text {
+                font-size: 1em;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="rain" id="rain"></div>
+    <div class="smoke" id="smoke"></div>
+    <div class="blood-vignette" id="bloodVignette"></div>
+    <div class="particles" id="particles"></div>
+
     <div class="container">
         <header>
             <h1>RISE OF SHADOWS</h1>
-            <p class="subtitle">A Telegram Game Based on the Mafia Chronicles</p>
+            <p class="subtitle">An Interactive Mafia Tale</p>
         </header>
 
-        <div class="stats" id="statsPanel">
-            <div class="stat-item">
-                <div class="stat-label">Loyalty</div>
-                <div class="stat-value" id="loyalty">100</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Power</div>
-                <div class="stat-value" id="power">50</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Trust</div>
-                <div class="stat-value" id="trust">75</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Love</div>
-                <div class="stat-value" id="love">0</div>
-            </div>
-        </div>
-
         <div class="game-screen" id="gameScreen">
-            <!-- Game content will be dynamically inserted here -->
+            <div class="chapter-title" id="chapterTitle">Chapter 1: Shadows of Rome</div>
+            <div class="story-text" id="storyText">
+                The rain falls on the funeral procession like tears from heaven itself. Your father, Don Alessandro Moretti, lies cold in his casket. The most powerful man in Rome's underworld, silenced forever by a rival's bullet. Now, the family looks to you. The weight of the Moretti legacy falls on your shoulders like a crown of thorns. Will you honor your father's memory with loyalty and strength, or will you forge your own path through these shadows?
+            </div>
+
+            <div class="stats-container">
+                <div class="stat">
+                    <div class="stat-label">LOYALTY</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill loyalty" id="loyaltyBar" style="width: 50%"></div>
+                        <div class="stat-value" id="loyaltyValue">50</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">POWER</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill power" id="powerBar" style="width: 50%"></div>
+                        <div class="stat-value" id="powerValue">50</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">TRUST</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill trust" id="trustBar" style="width: 50%"></div>
+                        <div class="stat-value" id="trustValue">50</div>
+                    </div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">LOVE</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill love" id="loveBar" style="width: 50%"></div>
+                        <div class="stat-value" id="loveValue">50</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="choices" id="choices"></div>
         </div>
     </div>
 
     <script>
-        const gameState = {
-            loyalty: 100,
+        // Game State
+        let stats = {
+            loyalty: 50,
             power: 50,
-            trust: 75,
-            love: 0,
-            currentScene: 0,
-            elenaRelationship: 0
+            trust: 50,
+            love: 50
         };
 
+        let currentScene = 0;
+
+        // Story Scenes - All 20 Chapters
         const scenes = [
             {
-                chapter: "Chapter 1 - The Funeral of Kings",
-                text: "The bells of Santa Maria echoed across Rome, deep and mournful. You are <span class='character-name'>Adrian Moretti</span>, standing among the sea of black suits at Don Vittorio's funeral—the last patriarch of your family. Every man here plays his role: silent glances, veiled threats hidden in condolences. From the Rossi, Mancini, and Bellanti families, rivals measure the strength of the Moretti bloodline. Your uncle Lorenzo whispers: <em>\"They're all wondering if you are strong enough to inherit his place.\"</em> Across the courtyard, a woman in a soft gray coat catches your eye—unafraid, curious. A stranger among wolves.",
+                chapter: "Chapter 1: Shadows of Rome",
+                text: "The rain falls on the funeral procession like tears from heaven itself. Your father, Don Alessandro Moretti, lies cold in his casket. The most powerful man in Rome's underworld, silenced forever by a rival's bullet.\n\nUncle Lorenzo approaches, his weathered face grave. \"Adrian, the families are watching. What you do now will echo for generations.\"\n\nYour cousin Sofia whispers, \"Father always said strength without wisdom is just brutality.\"\n\nMarco, your father's oldest friend, stands silent—his eyes betray something you can't quite place. Now, the family looks to you.",
                 choices: [
-                    { text: "Acknowledge her gaze and approach after the ceremony", effects: { love: 5, trust: -5 }, next: 1 },
-                    { text: "Ignore her and focus on the rival families watching you", effects: { power: 10, loyalty: 5 }, next: 2 },
-                    { text: "Whisper to Lorenzo about securing family loyalty", effects: { loyalty: 10, trust: 5 }, next: 3 }
+                    { text: "\"Father's death will not go unanswered. We strike at dawn.\"", effects: { loyalty: 15, power: 10, trust: -5 }, dialogue: "Uncle Lorenzo nods approvingly, but Sofia looks worried." },
+                    { text: "\"First, we strengthen our defenses. Then we learn who truly stands with us.\"", effects: { loyalty: 5, power: 5, trust: 10 }, dialogue: "Marco's expression softens slightly. 'Your father would be proud of your patience.'" },
+                    { text: "\"I... I need time. Father was everything to me.\"", effects: { loyalty: -5, power: -10, trust: 15, love: 10 }, dialogue: "Sofia embraces you. The old guard exchanges concerned glances." }
                 ]
             },
             {
-                chapter: "Chapter 2 - A Stranger Among Statues",
-                text: "Days later, you find yourself at the Capitoline Museum. The woman from the funeral is there—<span class='character-name'>Elena Rossi</span>, a historian researching bloodlines and secret societies. You approach her among the ancient Roman busts. She studies you with the same intensity she gives to the statues. \"Adrian Moretti,\" you introduce yourself. Her grip is cautious but firm. \"Still chasing the past?\" you ask. She replies, \"The past holds more honesty than the present.\" There's something magnetic about her—dangerous, yet irresistible.",
-                effects: { love: 10 },
+                chapter: "Chapter 2: The Encounter",
+                text: "Three weeks later, at the Palazzo Venezia gala. Crystal chandeliers cast dancing shadows across marble floors.\n\nElena Rossi approaches—crimson dress, dark eyes that seem to see through your armor. \"Don Moretti,\" she says, her voice like velvet over steel. \"I knew your father. He was... complicated.\"\n\n\"As are we all, signorina.\"\n\nShe smiles. \"I heard you're more than just his son. That you actually think before you act. Rare in our world.\"\n\nMarco appears at your elbow, tense. \"Adrian, the Calabrese family wants to speak.\"\n\nElena's eyes flicker with something—concern? Calculation?",
                 choices: [
-                    { text: "Ask her to meet you privately to discuss history", effects: { love: 15, trust: -10 }, next: 4 },
-                    { text: "Exchange pleasantries and leave—too risky", effects: { power: 5, loyalty: 5 }, next: 5 },
-                    { text: "Invite her to a Moretti family gathering", effects: { love: 10, loyalty: -15 }, next: 6 }
+                    { text: "\"Marco can wait. Dance with me, Elena.\"", effects: { love: 15, trust: 10, loyalty: -5 }, dialogue: "She takes your hand. 'Bold. Your enemies will use that against you.' 'Let them try.'" },
+                    { text: "\"Perhaps another time. Business calls, as always.\"", effects: { power: 10, trust: 5 }, dialogue: "She nods knowingly. 'The weight of the crown. I understand.' Her eyes linger." },
+                    { text: "\"Marco's right. I should focus on family matters.\"", effects: { loyalty: 10, power: 10, love: -15 }, dialogue: "Elena's smile fades. Marco looks satisfied. You feel an opportunity slip away." }
+                ],
+                sideQuest: {
+                    available: true,
+                    trigger: "After main choice",
+                    text: "Later that night, you find a note slipped into your coat: 'The Calabrese meeting is a trap. Trust no one. —E'",
+                    choice: { text: "Investigate Elena's warning", effects: { trust: 10, love: 10 } }
+                }
+            },
+            {
+                chapter: "Chapter 3: Secrets and Whispers",
+                text: "Elena begins investigating the mafia circles, uncovering hints of betrayal within your organization. She shares her concerns with you over a secret meeting in a quiet museum. The information she provides is valuable but dangerous—accepting her help means pulling her deeper into your world.",
+                choices: [
+                    { text: "Welcome her help and share your suspicions", effects: { love: 15, trust: 15, loyalty: -5 } },
+                    { text: "Thank her but keep her at a distance for safety", effects: { trust: 5, love: -5, power: 5 } },
+                    { text: "Dismiss her concerns as amateur speculation", effects: { loyalty: 10, trust: -15, love: -10 } }
                 ]
             },
             {
-                chapter: "Chapter 1 - Strategic Focus",
-                text: "You turn your attention to the rival families. Don Salvatore Rossi clutches his cane too tightly—a sign of weakness. Mancini's son whispers behind gloved hands—plotting, always plotting. You make mental notes of every gesture, every threat. Lorenzo nods approvingly. \"Good. You see the wolves for what they are.\" The funeral ends, but the real ceremony—the weighing of power—has just begun. You must consolidate your position quickly.",
-                effects: { power: 10, loyalty: 5 },
+                chapter: "Chapter 4: A Dangerous Bond",
+                text: "Your relationship with Elena deepens as you face the first serious challenges of trust and loyalty. She's proven her courage and intelligence, but enemies are watching. Every moment together is both precious and perilous.",
                 choices: [
-                    { text: "Call an emergency meeting with loyal family members", effects: { loyalty: 15, power: 10 }, next: 7 },
-                    { text: "Investigate the Rossi and Mancini families for weaknesses", effects: { power: 15, trust: -5 }, next: 8 },
-                    { text: "Meet with your uncle Lorenzo to discuss succession", effects: { loyalty: 10, trust: 10 }, next: 9 }
+                    { text: "Protect her by keeping your distance", effects: { power: 10, loyalty: 5, love: -15, trust: -10 } },
+                    { text: "Embrace the relationship openly despite risks", effects: { love: 20, trust: 10, loyalty: -10, power: -5 } },
+                    { text: "Continue seeing her in secret", effects: { love: 10, trust: 15, loyalty: 5 } }
                 ]
             },
             {
-                chapter: "Chapter 1 - Family First",
-                text: "You lean closer to Lorenzo. \"We need to ensure absolute loyalty within the family. The vultures are circling.\" Lorenzo's grim smile returns. \"Wise. Blood before everything. I'll arrange a private gathering of the inner circle.\" The strategy is clear: consolidate power within before facing threats without. As you speak, you notice Marco, your cousin, watching from a distance. His expression is unreadable, but something feels... off.",
-                effects: { loyalty: 10, trust: 5 },
+                chapter: "Chapter 5: The First Strike",
+                text: "The Volkov gang strikes at midnight, attacking one of your warehouses. Gunfire erupts, blood is spilled, and your men look to you for orders. This is your first real test as Don. Marco, your father's old friend, urges swift retaliation.",
                 choices: [
-                    { text: "Confront Marco about his suspicious behavior", effects: { trust: -10, power: 10 }, next: 10 },
-                    { text: "Keep Marco close but watched—trust but verify", effects: { loyalty: 5, trust: 10 }, next: 11 },
-                    { text: "Ignore suspicions and focus on external threats", effects: { power: 10, loyalty: -5 }, next: 12 }
+                    { text: "Launch an immediate counter-attack", effects: { power: 15, loyalty: 10, trust: -10 } },
+                    { text: "Strengthen defenses and gather intelligence first", effects: { power: 5, trust: 15, loyalty: 5 } },
+                    { text: "Seek a diplomatic solution", effects: { power: -10, trust: 10, love: 5 } }
                 ]
             },
             {
-                chapter: "Chapter 3 - The Private Meeting",
-                text: "<span class='character-name'>Elena</span> agrees to meet you at a quiet café near the Trevi Fountain. Over espresso, you discuss Roman history, power dynamics, and the cost of legacy. She's brilliant—her insights into bloodlines and loyalty are sharp, almost as if she understands your world. \"Every empire,\" she says, \"is built on secrets and sacrifice.\" You find yourself drawn to her intellect and courage. But mixing business with emotion is dangerous. Do you risk it?",
-                effects: { love: 15, trust: -10 },
+                chapter: "Chapter 6: Elena's Courage",
+                text: "During another attack, Elena refuses to hide. She demonstrates remarkable bravery and quick thinking, helping to save several of your men. Her actions earn respect from your soldiers, but also paint a target on her back.",
                 choices: [
-                    { text: "Confide in her about the mafia world you inhabit", effects: { love: 20, trust: -20, loyalty: -10 }, next: 13 },
-                    { text: "Keep the conversation academic and distant", effects: { trust: 10, power: 5 }, next: 14 },
-                    { text: "Test her loyalty by revealing a small family secret", effects: { love: 10, trust: -5 }, next: 15 }
+                    { text: "Acknowledge her publicly and make her an official advisor", effects: { love: 20, trust: 15, loyalty: -15, power: 10 } },
+                    { text: "Praise her privately but keep her role secret", effects: { love: 15, trust: 20, loyalty: 5 } },
+                    { text: "Forbid her involvement for her own safety", effects: { love: -20, trust: -15, power: 5, loyalty: 10 } }
                 ]
             },
             {
-                chapter: "Game Over - Missed Connection",
-                text: "You choose safety over risk, leaving Elena behind. In the months that follow, you consolidate power but feel a growing emptiness. Love was a risk you weren't willing to take. The empire grows, but your heart remains guarded. Years later, you hear she published a groundbreaking book on Roman bloodlines—dedicating a chapter to \"the stranger among statues.\" You wonder what might have been.",
-                gameOver: true,
-                ending: "Safe Empire, Empty Heart"
-            },
-            {
-                chapter: "Chapter 4 - Dangerous Invitation",
-                text: "You invite Elena to a Moretti family gathering—a bold, risky move. She accepts, curious and unafraid. At the event, she navigates the dangerous social terrain with grace, impressing even Lorenzo. But Marco's eyes linger on her too long, and whispers circulate. \"Adrian's brought an outsider.\" The family is divided—some see it as weakness, others as a strategic alliance. Elena proves her courage and intelligence, but you've made enemies within your own walls.",
-                effects: { love: 10, loyalty: -15 },
+                chapter: "Chapter 7: Lines of Loyalty",
+                text: "Internal alliances are tested as external threats mount. Family members question your decisions, especially regarding Elena. Your uncle Lorenzo challenges your leadership privately, forcing you to choose between tradition and your own path.",
                 choices: [
-                    { text: "Defend Elena publicly and assert your authority", effects: { love: 15, loyalty: -10, power: 10 }, next: 16 },
-                    { text: "Downplay her importance to protect her from threats", effects: { love: -5, trust: 10, loyalty: 5 }, next: 17 },
-                    { text: "Use her presence to test family loyalty", effects: { power: 15, trust: -10 }, next: 18 }
+                    { text: "Assert your authority firmly and modernize operations", effects: { power: 15, loyalty: -10, trust: 10 } },
+                    { text: "Seek compromise and honor old traditions", effects: { loyalty: 15, power: -5, trust: 5 } },
+                    { text: "Replace disloyal family members with trusted allies", effects: { power: 20, loyalty: -20, trust: -10 } }
                 ]
             },
             {
-                chapter: "Chapter 8 - Emergency Council",
-                text: "You summon the most loyal Moretti members to a secret location. Around the table: your uncle Lorenzo, trusted capos, and enforcers who've bled for the family. You lay out the situation: rivals are watching, weakness will be exploited, and unity is non-negotiable. \"Anyone who wavers,\" you state coldly, \"will be considered a threat.\" The room falls silent. Loyalty is reaffirmed, but at a cost—some resent the iron fist approach.",
-                effects: { loyalty: 15, power: 10 },
+                chapter: "Chapter 8: Whispers of Betrayal",
+                text: "Marco's suspicious behavior becomes impossible to ignore—secretive phone calls, unexplained absences, nervous glances. You discover he met with Volkov representatives. Your closest advisor, your father's most trusted friend... could he really betray the family?",
                 choices: [
-                    { text: "Assign surveillance on potential traitors", effects: { trust: -15, power: 15 }, next: 19 },
-                    { text: "Reward loyal members with increased responsibilities", effects: { loyalty: 20, power: 5 }, next: 20 },
-                    { text: "Plan a preemptive strike against the Rossi family", effects: { power: 20, loyalty: -10, trust: -10 }, next: 21 }
+                    { text: "Confront Marco directly and demand the truth", effects: { loyalty: 10, power: 10, trust: -5 } },
+                    { text: "Set a trap to catch him in the act", effects: { power: 15, loyalty: -10, trust: 5 } },
+                    { text: "Give him the benefit of doubt and observe", effects: { loyalty: -10, trust: 10, love: 5 } }
                 ]
             },
             {
-                chapter: "Final Chapter - Empire Ending",
-                text: "You've chosen power over love, strategy over emotion. The Moretti empire stands stronger than ever—rivals crushed, traitors eliminated, loyalty absolute. But as you sit alone in your study, overlooking Rome at night, you feel the weight of isolation. Elena is a distant memory, love sacrificed for dominance. The empire endures, but at what cost? <em>\"Blood and loyalty,\"</em> you whisper to the empty room, <em>\"are all that remain.\"</em>",
-                gameOver: true,
-                ending: "Empire of Shadows"
+                chapter: "Chapter 9: Nightfall Ambush",
+                text: "A coordinated attack hits multiple Moretti locations simultaneously. You and Elena must work together to survive the onslaught, your synergy and survival instincts pushed to their limits. The night tests everything you've built together.",
+                choices: [
+                    { text: "Split up to cover more ground", effects: { power: 15, loyalty: 10, love: -15, trust: -10 } },
+                    { text: "Fight side by side through every challenge", effects: { love: 20, trust: 20, loyalty: 5, power: 5 } },
+                    { text: "Send Elena to safety while you fight alone", effects: { love: -15, trust: -10, power: 15, loyalty: 10 } }
+                ]
+            },
+            {
+                chapter: "Chapter 10: Secrets Unveiled",
+                text: "Elena discovers hidden plots that shake the foundation of family loyalty. Documents reveal that some of your allies have been playing both sides. The question is: how deep does the betrayal go?",
+                choices: [
+                    { text: "Purge all suspected traitors immediately", effects: { power: 20, loyalty: -15, trust: -10 } },
+                    { text: "Investigate carefully to confirm suspicions", effects: { trust: 20, power: 5, loyalty: 5 } },
+                    { text: "Use the knowledge to manipulate your enemies", effects: { power: 15, loyalty: -5, trust: 10 } }
+                ]
+            },
+            {
+                chapter: "Chapter 11: The Hunter's Net",
+                text: "Elena is kidnapped by your enemies in a calculated move to break you. Every second counts as you mobilize your forces for a high-stakes rescue mission. This is personal now.",
+                choices: [
+                    { text: "Launch an immediate full-scale assault", effects: { power: 20, love: 15, loyalty: 10, trust: -10 } },
+                    { text: "Negotiate carefully while planning a rescue", effects: { trust: 15, love: 10, power: -5, loyalty: 5 } },
+                    { text: "Infiltrate quietly with a small elite team", effects: { love: 20, trust: 20, power: 10, loyalty: -5 } }
+                ]
+            },
+            {
+                chapter: "Chapter 12: Crimson Rescue",
+                text: "The rescue operation is daring and cinematic. You face the enemy mastermind in a major confrontation while saving Elena. The warehouse becomes a battlefield, and your relationship is forged stronger in blood and fire.",
+                choices: [
+                    { text: "Show mercy to defeated enemies", effects: { trust: 15, love: 10, power: -10, loyalty: -5 } },
+                    { text: "Eliminate all threats without hesitation", effects: { power: 20, loyalty: 10, love: -5, trust: -10 } },
+                    { text: "Capture the mastermind for interrogation", effects: { power: 15, trust: 15, loyalty: 5 } }
+                ]
+            },
+            {
+                chapter: "Chapter 13: Web of Deceit",
+                text: "Internal betrayal surfaces with undeniable evidence. Trust within the Moretti family is shaken as you discover that some of your closest allies have been working with the Monteneros all along.",
+                choices: [
+                    { text: "Execute all traitors publicly as a warning", effects: { power: 25, loyalty: -20, trust: -15 } },
+                    { text: "Exile them and seize their assets", effects: { power: 15, loyalty: -10, trust: 5 } },
+                    { text: "Turn them into double agents", effects: { power: 20, trust: 20, loyalty: -15 } }
+                ]
+            },
+            {
+                chapter: "Chapter 14: Shadows Over Rome",
+                text: "You launch covert operations to expose remaining traitors. Your romantic partnership with Elena strengthens under pressure as she becomes your most trusted strategist. Together, you move through Rome's shadows.",
+                choices: [
+                    { text: "Make Elena your official partner in leadership", effects: { love: 25, trust: 20, loyalty: -20, power: 10 } },
+                    { text: "Keep her role secret but influential", effects: { love: 20, trust: 25, loyalty: 5, power: 5 } },
+                    { text: "Protect her by limiting her involvement", effects: { love: -15, trust: -10, power: 10, loyalty: 10 } }
+                ]
+            },
+            {
+                chapter: "Chapter 15: Fire and Ashes",
+                text: "The Monteneros retaliate with devastating force. Fire consumes your warehouses, and life-threatening attacks test your love and loyalty to their limits. Rome burns as the war escalates.",
+                choices: [
+                    { text: "Respond with overwhelming force", effects: { power: 25, loyalty: 15, trust: -10, love: -5 } },
+                    { text: "Focus on protecting what matters most", effects: { love: 20, trust: 15, power: -10, loyalty: 5 } },
+                    { text: "Strike at their leadership directly", effects: { power: 20, loyalty: 10, trust: 10 } }
+                ]
+            },
+            {
+                chapter: "Chapter 16: Broken Allegiances",
+                text: "The aftermath of attacks reveals fractured alliances and new strategic challenges. Some families that once supported you now waver. You must rebuild trust while maintaining strength.",
+                choices: [
+                    { text: "Forge new alliances with former enemies", effects: { power: 15, trust: 20, loyalty: -15 } },
+                    { text: "Consolidate power by eliminating weak allies", effects: { power: 25, loyalty: -10, trust: -15 } },
+                    { text: "Demonstrate strength through calculated strikes", effects: { power: 20, loyalty: 10, trust: 5 } }
+                ]
+            },
+            {
+                chapter: "Chapter 17: Veil of Vengeance",
+                text: "Rival factions strike personally, attacking civilians close to you. The action escalates dramatically, and your relationship with Elena is tested as never before. Can love survive in a world of total war?",
+                choices: [
+                    { text: "Prioritize revenge at any cost", effects: { power: 25, loyalty: 15, love: -20, trust: -15 } },
+                    { text: "Balance justice with protecting loved ones", effects: { love: 20, trust: 20, power: 10, loyalty: 5 } },
+                    { text: "End the war through any means necessary", effects: { power: 20, trust: 15, loyalty: 10 } }
+                ]
+            },
+            {
+                chapter: "Chapter 18: Bloodlines and Betrayals",
+                text: "Family secrets emerge, revealing hidden enemies and complicated alliances from your father's era. The mafia war becomes personal as bloodlines and old grudges resurface.",
+                choices: [
+                    { text: "Honor the old alliances despite complications", effects: { loyalty: 20, power: -10, trust: 10 } },
+                    { text: "Break from the past and create new traditions", effects: { power: 20, loyalty: -15, trust: 15, love: 10 } },
+                    { text: "Use family secrets as weapons", effects: { power: 25, loyalty: -10, trust: -15 } }
+                ]
+            },
+            {
+                chapter: "Chapter 19: The Final Gambit",
+                text: "Everything converges in a climactic strike against the Monteneros and remaining traitors. Your love and strategy unite for one final, decisive operation. This is the moment that will define your empire.",
+                choices: [
+                    { text: "Lead the assault personally with Elena", effects: { love: 25, trust: 25, power: 20, loyalty: 10 } },
+                    { text: "Command from behind while protecting Elena", effects: { love: 10, trust: -10, power: 15, loyalty: 15 } },
+                    { text: "Split forces for maximum tactical advantage", effects: { power: 25, loyalty: 15, love: -10, trust: 5 } }
+                ]
+            },
+            {
+                chapter: "Chapter 20: Dawn of the Empire",
+                text: "The empire is stabilized, your love with Elena solidified, but hints of future conflicts linger. You stand together on the balcony, looking over Rome as dawn breaks. The first battle is won, but your story is far from over.",
+                choices: [
+                    { text: "Embrace peace and step back from active leadership", effects: { love: 25, trust: 20, power: -15, loyalty: 5 } },
+                    { text: "Consolidate power and prepare for future threats", effects: { power: 25, loyalty: 20, love: 10, trust: 10 } },
+                    { text: "Expand the empire beyond Rome", effects: { power: 30, loyalty: 15, love: 5, trust: -10 } }
+                ]
             }
         ];
 
+        // Initialize effects
+        function initEffects() {
+            // Create rain
+            const rain = document.getElementById('rain');
+            for (let i = 0; i < 50; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'rain-drop';
+                drop.style.left = Math.random() * 100 + '%';
+                drop.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                drop.style.animationDelay = Math.random() * 2 + 's';
+                rain.appendChild(drop);
+            }
+
+            // Create smoke
+            const smoke = document.getElementById('smoke');
+            for (let i = 0; i < 5; i++) {
+                const cloud = document.createElement('div');
+                cloud.className = 'smoke-cloud';
+                cloud.style.left = Math.random() * 100 + '%';
+                cloud.style.bottom = (Math.random() * 30 - 20) + '%';
+                cloud.style.animationDelay = Math.random() * 10 + 's';
+                smoke.appendChild(cloud);
+            }
+        }
+
+        // Update stats
         function updateStats() {
-            document.getElementById('loyalty').textContent = gameState.loyalty;
-            document.getElementById('power').textContent = gameState.power;
-            document.getElementById('trust').textContent = gameState.trust;
-            document.getElementById('love').textContent = gameState.love;
-        }
+            ['loyalty', 'power', 'trust', 'love'].forEach(stat => {
+                const value = Math.max(0, Math.min(100, stats[stat]));
+                stats[stat] = value;
+                document.getElementById(stat + 'Bar').style.width = value + '%';
+                document.getElementById(stat + 'Value').textContent = value;
+            });
 
-        function applyEffects(effects) {
-            if (effects) {
-                Object.keys(effects).forEach(key => {
-                    if (gameState.hasOwnProperty(key)) {
-                        gameState[gameState] += effects[key];
-                        if (gameState[key] < 0) gameState[key] = 0;
-                        if (gameState[key] > 100) gameState[key] = 100;
-                    }
-                });
-                updateStats();
+            // Check game over
+            if (stats.loyalty <= 0 || stats.power <= 0 || stats.trust <= 0 || stats.love <= 0) {
+                gameOver();
             }
         }
 
-        function loadScene(sceneIndex) {
-            const scene = scenes[sceneIndex];
-            if (!scene) {
-                showGameOver("The story continues...", "Your journey through the shadows of Rome is just beginning.");
-                return;
+        // Create particles
+        function createParticles(x, y, color = '#ffd700') {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.background = color;
+                particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                particlesContainer.appendChild(particle);
+                setTimeout(() => particle.remove(), 1000);
             }
+        }
 
-            const gameScreen = document.getElementById('gameScreen');
+        // Show blood vignette
+        function showBloodVignette() {
+            const vignette = document.getElementById('bloodVignette');
+            vignette.classList.add('active');
+            setTimeout(() => vignette.classList.remove('active'), 1000);
+        }
+
+        // Play AK47 gunshot sound
+        function playGunshotSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
-            if (scene.gameOver) {
-                showGameOver(scene.chapter, scene.text);
-                return;
-            }
-
-            if (scene.effects) {
-                applyEffects(scene.effects);
-            }
-
-            let html = `<div class="chapter-title">${scene.chapter}</div>`;
-            html += `<div class="story-text">${scene.text}</div>`;
+            // Create more realistic AK47 sound with multiple layers
+            const playLayer = (freq, decay, delay = 0) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                // AK47 characteristic frequency drop
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime + delay);
+                osc.frequency.exponentialRampToValueAtTime(freq * 0.3, audioContext.currentTime + delay + 0.03);
+                osc.frequency.exponentialRampToValueAtTime(freq * 0.1, audioContext.currentTime + delay + 0.08);
+                
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(3000, audioContext.currentTime + delay);
+                filter.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + delay + 0.1);
+                
+                gain.gain.setValueAtTime(0.4, audioContext.currentTime + delay);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + delay + decay);
+                
+                osc.type = 'sawtooth';
+                osc.start(audioContext.currentTime + delay);
+                osc.stop(audioContext.currentTime + delay + decay);
+            };
             
-            if (scene.choices && scene.choices.length > 0) {
-                html += '<div class="choices">';
-                scene.choices.forEach((choice, index) => {
-                    html += `<button class="choice-btn" onclick="makeChoice(${sceneIndex}, ${index})">${choice.text}</button>`;
-                });
-                html += '</div>';
+            // Layer multiple frequencies for realistic AK47 sound
+            playLayer(200, 0.15, 0);      // Main shot
+            playLayer(150, 0.12, 0.002);  // Body
+            playLayer(80, 0.2, 0.005);    // Bass/echo
+            
+            // Add white noise for muzzle blast
+            const bufferSize = audioContext.sampleRate * 0.1;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioContext.sampleRate * 0.02));
             }
-
-            gameScreen.innerHTML = html;
-            gameState.currentScene = sceneIndex;
+            
+            const noise = audioContext.createBufferSource();
+            const noiseGain = audioContext.createGain();
+            const noiseFilter = audioContext.createBiquadFilter();
+            
+            noise.buffer = buffer;
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(audioContext.destination);
+            
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 1500;
+            noiseFilter.Q.value = 0.5;
+            
+            noiseGain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+            
+            noise.start(audioContext.currentTime);
+            noise.stop(audioContext.currentTime + 0.1);
         }
 
-        function makeChoice(sceneIndex, choiceIndex) {
-            const scene = scenes[sceneIndex];
+        // Make choice
+        function makeChoice(choiceIndex) {
+            playGunshotSound(); // Realistic AK47 sound on every choice
+            
+            const scene = scenes[currentScene];
             const choice = scene.choices[choiceIndex];
             
-            applyEffects(choice.effects);
+            // Show dialogue response if available
+            if (choice.dialogue) {
+                const storyText = document.getElementById('storyText');
+                storyText.textContent += '\n\n' + choice.dialogue;
+                
+                // Smooth scroll effect
+                storyText.style.opacity = '0.7';
+                setTimeout(() => {
+                    storyText.style.opacity = '1';
+                }, 300);
+            }
             
-            if (choice.next !== undefined) {
-                loadScene(choice.next);
+            // Apply effects
+            let hasPositive = false;
+            let hasNegative = false;
+            
+            for (let stat in choice.effects) {
+                const change = choice.effects[stat];
+                stats[stat] += change;
+                
+                if (change > 0) hasPositive = true;
+                if (change < 0) hasNegative = true;
+            }
+
+            // Screen shake for big choices
+            if (Math.abs(choice.effects.power || 0) >= 15 || Math.abs(choice.effects.loyalty || 0) >= 15) {
+                document.getElementById('gameScreen').classList.add('shake');
+                setTimeout(() => document.getElementById('gameScreen').classList.remove('shake'), 500);
+            }
+
+            // Visual feedback
+            if (hasPositive) {
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, '#ffd700');
+                document.getElementById('gameScreen').classList.add('heartbeat');
+                setTimeout(() => document.getElementById('gameScreen').classList.remove('heartbeat'), 600);
+            }
+            
+            if (hasNegative) {
+                showBloodVignette();
+            }
+
+            updateStats();
+
+            // Check for side quest
+            if (scene.sideQuest && scene.sideQuest.available) {
+                setTimeout(() => showSideQuest(scene.sideQuest), 1200);
             } else {
-                showGameOver("Story Continues...", "More chapters coming soon. Your choices will shape Adrian and Elena's destiny.");
+                // Move to next scene
+                currentScene++;
+                if (currentScene < scenes.length) {
+                    setTimeout(() => loadScene(), 1200);
+                } else {
+                    setTimeout(() => showEnding(), 1200);
+                }
             }
         }
 
-        function showGameOver(title, message) {
-            const gameScreen = document.getElementById('gameScreen');
-            gameScreen.innerHTML = `
-                <div class="game-over">
-                    <h2>${title}</h2>
-                    <div class="story-text">${message}</div>
-                    <button class="restart-btn" onclick="restartGame()">Play Again</button>
-                </div>
-            `;
+        // Show side quest
+        function showSideQuest(sideQuest) {
+            const storyText = document.getElementById('storyText');
+            const choicesDiv = document.getElementById('choices');
+            
+            // Fade effect
+            storyText.style.transition = 'opacity 0.5s ease';
+            choicesDiv.style.transition = 'opacity 0.5s ease';
+            storyText.style.opacity = '0';
+            choicesDiv.style.opacity = '0';
+            
+            setTimeout(() => {
+                storyText.textContent = sideQuest.text;
+                choicesDiv.innerHTML = '';
+                
+                const acceptBtn = document.createElement('button');
+                acceptBtn.className = 'choice-btn';
+                acceptBtn.textContent = sideQuest.choice.text;
+                acceptBtn.onclick = () => {
+                    for (let stat in sideQuest.choice.effects) {
+                        stats[stat] += sideQuest.choice.effects[stat];
+                    }
+                    updateStats();
+                    currentScene++;
+                    if (currentScene < scenes.length) {
+                        setTimeout(() => loadScene(), 800);
+                    } else {
+                        setTimeout(() => showEnding(), 800);
+                    }
+                };
+                choicesDiv.appendChild(acceptBtn);
+                
+                const skipBtn = document.createElement('button');
+                skipBtn.className = 'choice-btn';
+                skipBtn.textContent = 'Continue without investigating';
+                skipBtn.style.opacity = '0.7';
+                skipBtn.onclick = () => {
+                    currentScene++;
+                    if (currentScene < scenes.length) {
+                        setTimeout(() => loadScene(), 800);
+                    } else {
+                        setTimeout(() => showEnding(), 800);
+                    }
+                };
+                choicesDiv.appendChild(skipBtn);
+                
+                storyText.style.opacity = '1';
+                choicesDiv.style.opacity = '1';
+            }, 500);
         }
 
-        function restartGame() {
-            gameState.loyalty = 100;
-            gameState.power = 50;
-            gameState.trust = 75;
-            gameState.love = 0;
-            gameState.currentScene = 0;
-            gameState.elenaRelationship = 0;
+        // Load scene
+        function loadScene() {
+            const scene = scenes[currentScene];
+            const chapterTitle = document.getElementById('chapterTitle');
+            const storyText = document.getElementById('storyText');
+            const choicesDiv = document.getElementById('choices');
+            
+            // Smooth fade transition
+            chapterTitle.style.transition = 'opacity 0.6s ease';
+            storyText.style.transition = 'opacity 0.6s ease';
+            choicesDiv.style.transition = 'opacity 0.6s ease';
+            
+            chapterTitle.style.opacity = '0';
+            storyText.style.opacity = '0';
+            choicesDiv.style.opacity = '0';
+            
+            setTimeout(() => {
+                chapterTitle.textContent = scene.chapter;
+                storyText.textContent = scene.text;
+                choicesDiv.innerHTML = '';
+
+                scene.choices.forEach((choice, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn';
+                    btn.textContent = choice.text;
+                    btn.onclick = () => makeChoice(index);
+                    choicesDiv.appendChild(btn);
+                });
+                
+                // Fade in
+                setTimeout(() => {
+                    chapterTitle.style.opacity = '1';
+                    storyText.style.opacity = '1';
+                    choicesDiv.style.opacity = '1';
+                }, 50);
+            }, 600);
+        }
+
+        // Show ending
+        function showEnding() {
+            let endingText = '';
+            const avgStats = (stats.loyalty + stats.power + stats.trust + stats.love) / 4;
+
+            if (avgStats >= 70) {
+                endingText = 'You have become the most powerful and respected Don in Rome. The Moretti family thrives under your leadership, and Elena stands by your side as your equal. The shadows bow to you now.';
+            } else if (avgStats >= 50) {
+                endingText = 'You survived the trials, though scars remain. The family is intact but fragile. Elena trusts you, but the future is uncertain. You walk a dangerous path between light and shadow.';
+            } else {
+                endingText = 'The family fractures under your leadership. Trust is broken, power slips away, and Elena questions if she made the right choice. The shadows have consumed you.';
+            }
+
+            document.getElementById('chapterTitle').textContent = 'THE END';
+            document.getElementById('storyText').textContent = endingText;
+            document.getElementById('choices').innerHTML = '<button class="choice-btn" onclick="restart()">Begin Again</button>';
+        }
+
+        // Game over
+        function gameOver() {
+            let reason = '';
+            if (stats.loyalty <= 0) reason = 'The family abandoned you for your disloyalty';
+            else if (stats.power <= 0) reason = 'You lost all power and influence';
+            else if (stats.trust <= 0) reason = 'No one trusts you anymore';
+            else if (stats.love <= 0) reason = 'You lost Elena forever';
+
+            const gameOverDiv = document.createElement('div');
+            gameOverDiv.className = 'game-over';
+            gameOverDiv.innerHTML = `
+                <div class="game-over-mask">🎭</div>
+                <div class="game-over-text">GAME OVER</div>
+                <div class="game-over-reason">${reason}</div>
+                <button class="restart-btn" onclick="restart()">Restart</button>
+            `;
+            document.body.appendChild(gameOverDiv);
+        }
+
+        // Restart
+        function restart() {
+            stats = { loyalty: 50, power: 50, trust: 50, love: 50 };
+            currentScene = 0;
+            document.querySelectorAll('.game-over').forEach(el => el.remove());
             updateStats();
-            loadScene(0);
+            loadScene();
         }
 
         // Initialize game
-        window.addEventListener('DOMContentLoaded', () => {
-            loadScene(0);
-        });
+        initEffects();
+        updateStats();
+        loadScene();
     </script>
 </body>
 </html>
